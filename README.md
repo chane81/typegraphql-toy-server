@@ -26,7 +26,52 @@
     > https://www.enterprisedb.com/downloads/postgres-postgresql-downloads
 
   - CMD 에서 PostGreSQL 명령어를 실행시키고 싶다면 시스템 환경변수 Path 에 PostgresSQL 이 설치된 bin 폴더의 경로를 추가해 주면 된다.
+
     > 제어판\모든 제어판 항목\시스템\고급 시스템 설정 > 시스템 속성 > 고급텝 > 하단 환경변수 버튼 클릭 > 시스템 변수 > Path 선택 후 편집버튼 클릭 > C:\Program Files\PostgreSQL\11\bin 추가
+
+  - QUERY - TABLE CREATE
+
+    ```sql
+    CREATE TABLE public.user
+    (
+      "id"          INTEGER       NOT NULL  GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9999999 CACHE 1 ),
+      "firstName"   VARCHAR(32)   NOT NULL,
+      "lastName"    VARCHAR(32)   NOT NULL,
+      "email"       TEXT UNIQUE   NOT NULL,
+      "password"    VARCHAR(100)  NOT NULL,
+      PRIMARY KEY ("id")
+    );
+    ```
+
+  - QUERY - LIKE SELECT
+
+    ```sql
+    SELECT "id", "firstName", "email", "password", "lastName"
+    FROM public.user
+    WHERE "lastName" LIKE '%' || '식' || '%'
+    ```
+
+  - QUERY - CREATE FUNCTION
+
+    ```sql
+    CREATE OR REPLACE FUNCTION public.proc_get_user(in_lastName VARCHAR(32))
+    RETURNS TABLE("id" INTEGER, "firstName" VARCHAR(32), "lastName" VARCHAR(32), "email" TEXT,"password" VARCHAR(100)) AS
+    $$
+    BEGIN
+      RETURN QUERY SELECT
+          u."id"
+        , u."firstName"
+        , u."lastName"
+        , u."email"
+        , u."password"
+      FROM public.user as u
+      WHERE u."lastName" LIKE '%' || in_lastName || '%';
+    END;
+    $$
+    LANGUAGE 'plpgsql';
+
+    SELECT * FROM public.get_user('환');
+    ```
 
 # 2. setup
 
