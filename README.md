@@ -1,0 +1,1 @@
+# typegraphql-toy-server
