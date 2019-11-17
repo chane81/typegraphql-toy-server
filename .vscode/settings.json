@@ -1,0 +1,68 @@
+{
+  // Editor 설정
+  "editor.renderWhitespace": "all",
+  "editor.tabSize": 2,
+  "editor.renderIndentGuides": false,
+  "editor.formatOnSave": true,
+  "[javascript]": {
+    "editor.formatOnSave": false,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  // eslint 설정
+  "eslint.autoFixOnSave": false,
+  "eslint.alwaysShowStatus": true,
+  // perttier 설정
+  "prettier.jsxSingleQuote": true,
+  "prettier.tabWidth": 2,
+  "prettier.typescriptEnable": ["typescript", "typescriptreact"],
+  "prettier.printWidth": 80,
+  "prettier.singleQuote": true,
+  "prettier.bracketSpacing": true,
+  "prettier.trailingComma": "none",
+  "prettier.flattenTernaries": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.tslint": true
+  },
+  // folter exclude
+  "search.exclude": {
+    ".git": true,
+    ".tscache": true,
+    "bower_components": true,
+    "bin": true,
+    "build": true,
+    "lib": true,
+    "node_modules": true
+  },
+  // files 설정
+  "files.autoSave": "onFocusChange",
+  "files.defaultLanguage": "ko",
+  // 테마 설정
+  "workbench.iconTheme": "material-icon-theme",
+  "workbench.colorTheme": "Cobalt2",
+  "editor.minimap.enabled": false,
+  // 터미널 설정
+  "terminal.integrated.shell.windows": "C:\\WINDOWS\\System32\\cmd.exe",
+  "terminal.integrated.cursorBlinking": true,
+  "terminal.integrated.cursorStyle": "underline",
+  // importCode 설정
+  "importCost.debug": true,
+  "importCost.timeout": 100000,
+  // 기타 설정
+  "gitlens.advanced.messages": {
+    "suppressFileNotUnderSourceControlWarning": true
+  },
+  "git.autofetch": true,
+  "liveServer.settings.donotShowInfoMsg": true,
+  "liveServer.settings.donotVerifyTags": true,
+  "sync.gist": "22d8153e6726882b514d8cab04b44d44",
+  "markdown-pdf.highlightStyle": "github.css",
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "diffEditor.ignoreTrimWhitespace": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "git.enableSmartCommit": true,
+  "material-icon-theme.activeIconPack": "react_redux",
+  "material-icon-theme.folders.theme": "specific",
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}
