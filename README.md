@@ -32,15 +32,15 @@
   - QUERY - TABLE CREATE
 
     ```sql
-    CREATE TABLE public.user
-    (
-      "id"          INTEGER       NOT NULL  GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9999999 CACHE 1 ),
-      "firstName"   VARCHAR(32)   NOT NULL,
-      "lastName"    VARCHAR(32)   NOT NULL,
-      "email"       TEXT UNIQUE   NOT NULL,
-      "password"    VARCHAR(100)  NOT NULL,
+    CREATE TABLE "user" (
+      "id"          SERIAL NOT NULL,
+      "firstName"   CHARACTER VARYING NOT NULL,
+      "lastName"    CHARACTER VARYING NOT NULL,
+      "email"       TEXT NOT NULL,
+      "password"    CHARACTER VARYING NOT NULL,
+      UNIQUE ("email"),
       PRIMARY KEY ("id")
-    );
+    )
     ```
 
   - QUERY - LIKE SELECT
