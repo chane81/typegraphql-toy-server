@@ -17,8 +17,13 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
+
+    // export default 한 모듈에 대해서 쓸 수 있게 함(import * as express from 'express' => import Express from 'express')
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true, // import React, { PureComponent } from 'react' 처럼 한줄로 쓸 수 있게 함
+
+    // import React, { PureComponent } from 'react' 처럼 한줄로 쓸 수 있게 함
+    "esModuleInterop": true,
+
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "skipLibCheck": true,
