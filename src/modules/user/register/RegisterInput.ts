@@ -15,6 +15,10 @@ export class RegisterInput {
   @Field()
   @IsEmail()
   @isEmailAlreadyExist({ message: '이미 존재하는 이메일입니다.' })
+  // 아래처럼 쓸수도 있음
+  // @Validate(isEmailAlreadyExistConstraint, {
+  //   message: '이미 존재하는 이메일입니다.'
+  // })
   email: string;
 
   @Field()
