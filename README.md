@@ -194,3 +194,4 @@
   - graphql 의 args에 대한 Validation 체크로 class-validator 모듈을 사용
   - 참고 URL
     - https://typegraphql.ml/docs/validation.html
+    - https://github.com/typestack/class-validator
