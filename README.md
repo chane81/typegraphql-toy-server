@@ -80,7 +80,8 @@
   ```
   yarn add apollo-server-express express graphql reflect-metadata type-graphql
   yarn add -D @types/express @types/graphql @types/node nodemon ts-node typescript
-  yarn add pg typeorm bcryptjs
+  yarn add -D ts-node-dev @types/bcryptjs
+  yarn add pg typeorm bcryptjs reflect-metadata class-validator
   yarn add @types/bcryptjs
   ```
 
@@ -188,3 +189,8 @@
     > 필드위에 선언
 
     > 클래스의 해당 필드가 graphQL 의 데이터 필드로 쓰인다
+
+- ## Validation
+  - graphql 의 args에 대한 Validation 체크로 class-validator 모듈을 사용
+  - 참고 URL
+    - https://typegraphql.ml/docs/validation.html
