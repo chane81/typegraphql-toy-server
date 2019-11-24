@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from 'typeorm';
-import { ObjectType, Field, ID } from 'type-graphql';
+import { ObjectType, Field, ID, Root } from 'type-graphql';
 
 // Column() 프로퍼티 정의는 DB TABLE 정의와 동기화
 // Field() 프로퍼티는 graphQL 에서 리턴되는 필드들
@@ -23,8 +23,11 @@ export class User extends BaseEntity {
   @Column('text', { unique: true })
   email: string;
 
+  // FIELD RESOLVER - 해당 필드의 내용을 함수안의 로직으로 그리고 해당 필드가 속해있는 parent 필드들의 값을 가지고 처리된 값으로 채워넣음
   @Field()
-  name: string;
+  name(@Root() parent: User): string {
+    return `${parent.firstName} ${parent.lastName}`;
+  }
 
   @Column()
   password: string;
