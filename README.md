@@ -441,3 +441,68 @@
             > URL이 호출 script 와 동일 출처(same origin)에 있다면, user credentials (cookies, basic http auth 등..)을 전송한다. 이것은 default 값이다.
           - omit
             > 절대로 cookie 들을 전송하거나 받지 않는다.
+
+- ## Auth
+
+  - 참고 url
+    > https://typegraphql.ml/docs/authorization.html#how-to-use
+  - @Authorized() 데코레이션을 resolver의 쿼리/뮤테이션 함수위에 작성하여 쓴다.
+
+    - ex)
+      ```js
+      @Authorized()
+      @Query(() => String)
+      async hello() {
+        return 'Hello World!';
+      }
+      ```
+
+  - 단, 쓰기위해서는 buildSchema 에 auth 조건을 등록하여야 쓸 수 있다.
+
+    - ex)
+      ```js
+      const schema = await buildSchema({
+        resolvers: [MeResolver, RegisterResolver, LoginResolver],
+        authChecker: ({ context: { req } }) => {
+          return !!req.session.userId;
+        }
+      });
+      ```
+
+- ## Middleware
+
+  - 참고 url
+
+    > https://typegraphql.ml/docs/middlewares.html
+
+  - 아래와 같이 MiddlewareFn 형식의 함수를 만들어서 resolver의 쿼리/뮤테이션 함수위에 작성하여 쓴다.
+  - 총 4개의 인자를 쓸 수 있으며 인자의 종류는 아래와 같다.
+
+    > root, args, context, info
+
+  - ex) 미들웨어 모듈 작성
+
+    ```js
+    export const isAuth: MiddlewareFn<MyContext> = async ({ context }, next) => {
+      if (!context.req.session!.userId) {
+        throw new Error('not Authenticated');
+      }
+
+      return next();
+    };
+
+    export const logger: MiddlewareFn<MyContext> = async ({ args }, next) => {
+      console.log('args: ', args);
+
+      return next();
+    };
+    ```
+
+  - ex) 쿼리/뮤테이션 함수에서 미들웨어 사용
+    ```js
+    @UseMiddleware(isAuth, logger)
+    @Query(() => String)
+    async hello() {
+      return 'Hello World!';
+    }
+    ```

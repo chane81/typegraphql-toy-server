@@ -1,12 +1,26 @@
-import { Resolver, Query, Mutation, Arg } from 'type-graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Arg,
+  //Authorized,
+  UseMiddleware
+} from 'type-graphql';
 import { Like, getConnectionManager } from 'typeorm';
 import bcrypt from 'bcryptjs';
 import { User } from '../../entity/User';
 import { RegisterInput } from './register/RegisterInput';
+import { isAuth } from '../middleware/isAuth';
+import { logger } from '../middleware/logger';
 
 @Resolver(User)
 export class RegisterResolver {
   // QUERY
+  // Auth 체크 2가지 방법
+  // 1. @Authorized() 데코레이션 사용
+  // 2. @UseMiddleware(...) 데코레이션 사용
+  //@Authorized()
+  @UseMiddleware(isAuth, logger)
   @Query(() => String)
   async hello() {
     return 'Hello World!';

@@ -20,7 +20,10 @@ const main = async () => {
 
   // RESOLVER 가져와서 스키마에 등록
   const schema = await buildSchema({
-    resolvers: [MeResolver, RegisterResolver, LoginResolver]
+    resolvers: [MeResolver, RegisterResolver, LoginResolver],
+    authChecker: ({ context: { req } }) => {
+      return !!req.session.userId;
+    }
   });
 
   // 서버에 스키마 등록
