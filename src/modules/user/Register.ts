@@ -12,6 +12,8 @@ import { User } from '../../entity/User';
 import { RegisterInput } from './register/RegisterInput';
 import { isAuth } from '../middleware/isAuth';
 import { logger } from '../middleware/logger';
+import { sendEmail } from '../utils/sendEmail';
+import { createConfirmationUrl } from '../utils/createConfirmationUrl';
 
 @Resolver(User)
 export class RegisterResolver {
@@ -57,6 +59,9 @@ export class RegisterResolver {
       email,
       password: hashedPassword
     }).save();
+
+    const sendUrl = await createConfirmationUrl(user.id);
+    await sendEmail(email, sendUrl);
 
     return user;
   }

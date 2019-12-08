@@ -454,3 +454,25 @@
     return 'Hello World!';
   }
   ```
+
+# 7. 사용자 등록시 인증메일 보내기, 로그인시 인증하지 않은 유저는 로그인 false 되게
+
+- ## 이메일 보내기
+  - nodemailer 모듈
+  - 참고 url
+
+    - https://nodemailer.com/
+- ## 인증
+  - 관계된 파일
+    - modules/user/ConfirmUser.ts
+    - modules/user/Register.ts
+    - modules/utils/createConfirmationUrl.ts
+    - modules/utils/sendEmail.ts
+  - 인증절차
+    - ㄱ. 사용자등록 리졸버(Register 리졸버) 호출
+    - ㄱ. Register 리졸버에서 createConfirmationUrl() 호출하여 인증토큰이 url 파라메터로 포함된 인증 url 생성
+      - url 생성시 redis 에 (key: 토큰, value: userId) 값 저장
+    - ㄴ. 인증토큰 url 을 메일 내용에 포함하여 이메일 보냄
+    - ㄷ. confirmUser 리졸버에서 이메일 내용에 포함된 토큰을 가지고 인증 데이터 update
+      - postgres DB 의 User.confirmed 데이터를 true 로 update
+      - redis 의 해당 key: 토큰 값을 제거

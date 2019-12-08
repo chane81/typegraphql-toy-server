@@ -4,23 +4,33 @@ import Express from 'express';
 import { buildSchema } from 'type-graphql';
 import { createConnection } from 'typeorm';
 import session from 'express-session';
-//import connectRedis from 'connect-redis';
-import connectMongo from 'connect-mongo';
-//import { redis } from './redis';
-import { mongo } from './mongo';
+import connectRedis from 'connect-redis';
+//import connectMongo from 'connect-mongo';
+//import { mongo } from './mongo';
+import { redis } from './redis';
 import cors from 'cors';
 
 import { RegisterResolver } from './modules/user/Register';
 import { LoginResolver } from './modules/user/Login';
 import { MeResolver } from './modules/user/Me';
+import { ConfirmUserResolver } from './modules/user/ConfirmUser';
 
 const main = async () => {
+  // Nodemailer 모듈을 사용할 때 SSL 관련 에러 메시지를 본다면 아래와 같이 세팅
+  // 메시지: UnhandledPromiseRejectionWarning: Error: self signed certificate in certificate chain
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
   // DB 커넥션
   await createConnection();
 
   // RESOLVER 가져와서 스키마에 등록
   const schema = await buildSchema({
-    resolvers: [MeResolver, RegisterResolver, LoginResolver],
+    resolvers: [
+      MeResolver,
+      RegisterResolver,
+      LoginResolver,
+      ConfirmUserResolver
+    ],
     authChecker: ({ context: { req } }) => {
       return !!req.session.userId;
     }
@@ -39,8 +49,8 @@ const main = async () => {
 
   const app = Express();
 
-  //const RedisStore = connectRedis(session);
-  const MongoStore = connectMongo(session);
+  const RedisStore = connectRedis(session);
+  //const MongoStore = connectMongo(session);
 
   app.use(
     cors({
@@ -53,12 +63,12 @@ const main = async () => {
   app.use(
     session({
       // 레디스 방법
-      // store: new RedisStore({
-      //   client: redis
-      // }),
-      store: new MongoStore({
-        mongooseConnection: mongo
+      store: new RedisStore({
+        client: redis
       }),
+      // store: new MongoStore({
+      //   mongooseConnection: mongo
+      // }),
       name: 'qid',
       secret: 'mytest1122',
       resave: false,
@@ -84,7 +94,7 @@ const main = async () => {
   // });
 
   // LISTEN 하기
-  app.listen(4000, () => {
+  app.listen(4000, async () => {
     console.log('server started on http://localhost:4000/graphql');
   });
 };

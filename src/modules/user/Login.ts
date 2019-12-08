@@ -14,13 +14,20 @@ export class LoginResolver {
   ): Promise<User | null> {
     const user = await User.findOne({ where: { email } });
 
+    // User 체크
     if (!user) {
       return null;
     }
 
     const valid = await bcrypt.compare(password, user.password);
 
+    // 비번 체크
     if (!valid) {
+      return null;
+    }
+
+    // 인증 체크
+    if (!user.confirmed) {
       return null;
     }
 
