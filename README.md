@@ -223,224 +223,169 @@
 
     > 클래스의 해당 필드가 graphQL 의 데이터 필드로 쓰인다
 
-- ## Validation
+# 4. Validation
 
-  - graphql 의 args에 대한 Validation 체크로 class-validator 모듈을 사용
-  - 참고 URL
-    - https://typegraphql.ml/docs/validation.html
-    - https://github.com/typestack/class-validator
+- ## graphql 의 args에 대한 Validation 체크로 class-validator 모듈을 사용
+- ## 참고 URL
 
-- ## Graphql query & mutation
+  - https://typegraphql.ml/docs/validation.html
+  - https://github.com/typestack/class-validator
 
-  - query
+# 5. 세션 관리 & AUTH & CORS
 
-    ```graphql
-    query {
-      findUser(lastName: "욱") {
-        id
-        firstName
-        lastName
-        email
-        name
-      }
-    }
+- ## 세션관리 및 로그인
 
-    query {
-      me {
-        id
-        firstName
-        lastName
-        name
-        email
-      }
-    }
-    ```
+  - 세션저장은 Redis 또는 Mongo DB 를 이용 했음
 
-  - mutation
+    - 필요한 의존 PACKAGE
 
-    ```graphql
-    mutation {
-      register(
-        data: {
-          firstName: "김"
-          lastName: "창욱"
-          email: "sangwook99@naver.com"
-          password: "1111"
+      > express, express-session, @types/express, @types/express-session
+
+      > mongoose, connect-mongo, @types/mongoose, @types/connect-mongo
+
+      > ioredis, connect-redis, @types/ioredis, @types/connect-redis
+
+  - CODE
+
+    - Mongo DB
+
+      ```js
+      import session from 'express-session';
+      import connectMongo from 'connect-mongo';
+      import Mongoose from 'mongoose';
+
+      const MongoStore = connectMongo(session);
+      const mongo = Mongoose.createConnection('mongodb://127.0.0.1:27017', {
+        dbName: 'graphql-toy-session',
+        useUnifiedTopology: true,
+        useNewUrlParser: true
+      });
+
+      // 세션 설정
+      const app = Express();
+
+      app.use(
+        session({
+          store: new MongoStore({
+            mongooseConnection: mongo
+          }),
+          name: 'qid',
+          secret: 'mytest1122',
+          resave: false,
+          saveUninitialized: false,
+          cookie: {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 1000 * 60 * 60 * 24 * 7 * 365 // 7 years
+          }
+        })
+      );
+      ```
+
+    - Redis DB
+
+      ```js
+      import session from 'express-session';
+      import connectRedis from 'connect-redis';
+      import Redis from 'ioredis';
+
+      const redis = new Redis({
+        port: 6379
+      });
+
+      const RedisStore = connectRedis(session);
+
+      // 세션 설정
+      app.use(
+        session({
+          // 레디스 방법
+          store: new RedisStore({
+            client: redis
+          }),
+          name: 'qid',
+          secret: 'mytest1122',
+          resave: false,
+          saveUninitialized: false,
+          cookie: {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 1000 * 60 * 60 * 24 * 7 * 365 // 7 years
+          }
+        })
+      );
+      ```
+
+  - 로그인 예시
+
+    - 로그인 모듈에서 Request Context 를 Login Mutation 리졸버 호출시에 userId 를 세션에 저장하도록 함
+    - 클라이언트에서 Login 리졸버 호출했을 때 서버에서는 Mongo DB OR Redis DB 에 세션정보를(userId 포함)저장 하고 클라이언트로 암호화된 세션정보를 보내면 클라이언트는 쿠키로 해당 세션정보를 저장한다.
+    - 추후 클라이언트에서 서버로 데이터 요청시 인증된 사용자인지 체크할 때 저장된 세션쿠키 정보를 서버로 날리게 되는데 그 때 서버에서 인증된 사용자 인지를 체크 할 수 있다.
+    - /modules/user/Login.ts 모듈 참고
+
+- ## CORS 관련
+
+  - GraphQL 에서 CORS 설정을 2가지 방법으로 할 수 있다.
+
+    - 1번째 방법은 cors 모듈을 설치해서 사용하는 방법. 아래 코드 참고
+
+      ```js
+      import cors from 'cors';
+      import { ApolloServer } from 'apollo-server-express';
+
+      const app = Express();
+
+      app.use(
+        cors({
+          origin: 'http://localhost:3000',
+          credentials: true
+        })
+      );
+
+      // EXPRESS 를 미들웨어로 등록
+      apolloServer.applyMiddleware({ app });
+      ```
+
+    - 2번째 방법은 cors 모듈을 설치하지 않고 사용하는 방법. 아래 코드 참고
+
+      ```js
+      import { ApolloServer } from 'apollo-server-express';
+
+      apolloServer.applyMiddleware({
+        app,
+        cors: {
+          origin: 'http://localhost:3000',
+          credentials: true
         }
-      ) {
-        id
-        firstName
-        lastName
-        email
-        name
-      }
-    }
+      });
+      ```
 
-    mutation {
-      login(email: "sangwook99@naver.com", password: "1111") {
-        id
-        firstName
-        lastName
-        email
-      }
-    }
-    ```
+  - request.credentials
 
-- ## 세션 관리 & AUTH & CORS
+    - 설명
 
-  - 세션관리
-
-    - 세션저장은 Redis 또는 Mongo DB 를 이용 했음
-
-      - 필요한 의존 PACKAGE
-
-        > express, express-session, @types/express, @types/express-session
-
-        > mongoose, connect-mongo, @types/mongoose, @types/connect-mongo
-
-        > ioredis, connect-redis, @types/ioredis, @types/connect-redis
-
-    - CODE
-
-      - Mongo DB
+      - cross-origin 요청의 경우, user agent가 다른 도메인으로부터 cookie 들을 전달해야만 하는가 아닌가를 나타낸다
+      - 참고 url: MDN web docs
+        - https://developer.mozilla.org/ko/docs/Web/API/Request/credentials
+      - playground 에서 Login 모듈 호출하여 테스트시에 작동이 잘 되지 않아서 settings 에서 살펴보니 request.credentials 설정이 omit 로 되어있어 include 로 설정을 바꾸었다.
+      - 추후 프론트엔트 페이지에서 graphql 사용시에 apollo-link-http 모듈 사용시에 request.credentials 설정을 사용할 수 있으므로 참고 해야한다.
 
         ```js
-        import session from 'express-session';
-        import connectMongo from 'connect-mongo';
-        import Mongoose from 'mongoose';
+        import { createHttpLink } from 'apollo-link-http';
 
-        const MongoStore = connectMongo(session);
-        const mongo = Mongoose.createConnection('mongodb://127.0.0.1:27017', {
-          dbName: 'graphql-toy-session',
-          useUnifiedTopology: true,
-          useNewUrlParser: true
+        const httpLink = createHttpLink({
+          uri: 'http://localhost:4000/graphql'
+          // 종류: omit(생략), include(다른 도메인일 경우), same-origin(같은 도메인일 경우)
+          credentials: 'same-origin'
         });
-
-        // 세션 설정
-        const app = Express();
-
-        app.use(
-          session({
-            store: new MongoStore({
-              mongooseConnection: mongo
-            }),
-            name: 'qid',
-            secret: 'mytest1122',
-            resave: false,
-            saveUninitialized: false,
-            cookie: {
-              httpOnly: true,
-              secure: process.env.NODE_ENV === 'production',
-              maxAge: 1000 * 60 * 60 * 24 * 7 * 365 // 7 years
-            }
-          })
-        );
         ```
 
-      - Redis DB
-
-        ```js
-        import session from 'express-session';
-        import connectRedis from 'connect-redis';
-        import Redis from 'ioredis';
-
-        const redis = new Redis({
-          port: 6379
-        });
-
-        const RedisStore = connectRedis(session);
-
-        // 세션 설정
-        app.use(
-          session({
-            // 레디스 방법
-            store: new RedisStore({
-              client: redis
-            }),
-            name: 'qid',
-            secret: 'mytest1122',
-            resave: false,
-            saveUninitialized: false,
-            cookie: {
-              httpOnly: true,
-              secure: process.env.NODE_ENV === 'production',
-              maxAge: 1000 * 60 * 60 * 24 * 7 * 365 // 7 years
-            }
-          })
-        );
-        ```
-
-    - 로그인 예시
-
-      - 로그인 모듈에서 Request Context 를 Login Mutation 리졸버 호출시에 userId 를 세션에 저장하도록 함
-      - 클라이언트에서 Login 리졸버 호출했을 때 서버에서는 Mongo DB OR Redis DB 에 세션정보를(userId 포함)저장 하고 클라이언트로 암호화된 세션정보를 보내면 클라이언트는 쿠키로 해당 세션정보를 저장한다.
-      - 추후 클라이언트에서 서버로 데이터 요청시 인증된 사용자인지 체크할 때 저장된 세션쿠키 정보를 서버로 날리게 되는데 그 때 서버에서 인증된 사용자 인지를 체크 할 수 있다.
-      - /modules/user/Login.ts 모듈 참고
-
-    - CORS 관련
-
-      - GraphQL 에서 CORS 설정을 2가지 방법으로 할 수 있다.
-
-        - 1번째 방법은 cors 모듈을 설치해서 사용하는 방법. 아래 코드 참고
-
-          ```js
-          import cors from 'cors';
-          import { ApolloServer } from 'apollo-server-express';
-
-          const app = Express();
-
-          app.use(
-            cors({
-              origin: 'http://localhost:3000',
-              credentials: true
-            })
-          );
-
-          // EXPRESS 를 미들웨어로 등록
-          apolloServer.applyMiddleware({ app });
-          ```
-
-        - 2번째 방법은 cors 모듈을 설치하지 않고 사용하는 방법. 아래 코드 참고
-
-          ```js
-          import { ApolloServer } from 'apollo-server-express';
-
-          apolloServer.applyMiddleware({
-            app,
-            cors: {
-              origin: 'http://localhost:3000',
-              credentials: true
-            }
-          });
-          ```
-
-      - request.credentials
-
-        - 설명
-
-          - cross-origin 요청의 경우, user agent가 다른 도메인으로부터 cookie 들을 전달해야만 하는가 아닌가를 나타낸다
-          - 참고 url: MDN web docs
-            - https://developer.mozilla.org/ko/docs/Web/API/Request/credentials
-          - playground 에서 Login 모듈 호출하여 테스트시에 작동이 잘 되지 않아서 settings 에서 살펴보니 request.credentials 설정이 omit 로 되어있어 include 로 설정을 바꾸었다.
-          - 추후 프론트엔트 페이지에서 graphql 사용시에 apollo-link-http 모듈 사용시에 request.credentials 설정을 사용할 수 있으므로 참고 해야한다.
-
-            ```js
-            import { createHttpLink } from 'apollo-link-http';
-
-            const httpLink = createHttpLink({
-              uri: 'http://localhost:4000/graphql'
-              // 종류: omit(생략), include(다른 도메인일 경우), same-origin(같은 도메인일 경우)
-              credentials: 'same-origin'
-            });
-            ```
-
-        - 종류
-          - include
-            > cross-origin 호출이라 할지라도 언제나 user credentials (cookies, basic http auth 등..)을 전송한다.
-          - same-origin
-            > URL이 호출 script 와 동일 출처(same origin)에 있다면, user credentials (cookies, basic http auth 등..)을 전송한다. 이것은 default 값이다.
-          - omit
-            > 절대로 cookie 들을 전송하거나 받지 않는다.
+    - 종류
+      - include
+        > cross-origin 호출이라 할지라도 언제나 user credentials (cookies, basic http auth 등..)을 전송한다.
+      - same-origin
+        > URL이 호출 script 와 동일 출처(same origin)에 있다면, user credentials (cookies, basic http auth 등..)을 전송한다. 이것은 default 값이다.
+      - omit
+        > 절대로 cookie 들을 전송하거나 받지 않는다.
 
 - ## Auth
 
@@ -469,9 +414,11 @@
       });
       ```
 
-- ## Middleware
+# 6. Middleware
 
-  - 참고 url
+- ## 참고
+
+  - url
 
     > https://typegraphql.ml/docs/middlewares.html
 
@@ -480,29 +427,30 @@
 
     > root, args, context, info
 
-  - ex) 미들웨어 모듈 작성
+- ## ex) 미들웨어 모듈 작성
 
-    ```js
-    export const isAuth: MiddlewareFn<MyContext> = async ({ context }, next) => {
-      if (!context.req.session!.userId) {
-        throw new Error('not Authenticated');
-      }
-
-      return next();
-    };
-
-    export const logger: MiddlewareFn<MyContext> = async ({ args }, next) => {
-      console.log('args: ', args);
-
-      return next();
-    };
-    ```
-
-  - ex) 쿼리/뮤테이션 함수에서 미들웨어 사용
-    ```js
-    @UseMiddleware(isAuth, logger)
-    @Query(() => String)
-    async hello() {
-      return 'Hello World!';
+  ```js
+  export const isAuth: MiddlewareFn<MyContext> = async ({ context }, next) => {
+    if (!context.req.session!.userId) {
+      throw new Error('not Authenticated');
     }
-    ```
+
+    return next();
+  };
+
+  export const logger: MiddlewareFn<MyContext> = async ({ args }, next) => {
+    console.log('args: ', args);
+
+    return next();
+  };
+  ```
+
+- ## ex) 쿼리/뮤테이션 함수에서 미들웨어 사용
+  - src/modules/user/Register.ts 참고
+  ```js
+  @UseMiddleware(isAuth, logger)
+  @Query(() => String)
+  async hello() {
+    return 'Hello World!';
+  }
+  ```
