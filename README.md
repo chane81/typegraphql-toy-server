@@ -87,11 +87,12 @@
   - QUERY - CREATE FUNCTION
 
     ```sql
-    CREATE OR REPLACE FUNCTION public.proc_get_user(in_lastName VARCHAR(32))
+    CREATE OR REPLACE FUNCTION public.get_user(in_lastName VARCHAR(32))
     RETURNS TABLE("id" INTEGER, "firstName" VARCHAR(32), "lastName" VARCHAR(32), "email" TEXT,"password" VARCHAR(100)) AS
     $$
     BEGIN
-      RETURN QUERY SELECT
+      RETURN QUERY
+      SELECT
           u."id"
         , u."firstName"
         , u."lastName"
@@ -458,10 +459,12 @@
 # 7. 사용자 등록시 인증메일 보내기, 로그인시 인증하지 않은 유저는 로그인 false 되게
 
 - ## 이메일 보내기
+
   - nodemailer 모듈
   - 참고 url
 
     - https://nodemailer.com/
+
 - ## 인증
   - 관계된 파일
     - modules/user/ConfirmUser.ts
