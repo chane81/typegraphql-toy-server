@@ -10,11 +10,6 @@ import connectRedis from 'connect-redis';
 import { redis } from './redis';
 import cors from 'cors';
 
-import { RegisterResolver } from './modules/user/Register';
-import { LoginResolver } from './modules/user/Login';
-import { MeResolver } from './modules/user/Me';
-import { ConfirmUserResolver } from './modules/user/ConfirmUser';
-
 const main = async () => {
   // Nodemailer 모듈을 사용할 때 SSL 관련 에러 메시지를 본다면 아래와 같이 세팅
   // 메시지: UnhandledPromiseRejectionWarning: Error: self signed certificate in certificate chain
@@ -25,12 +20,7 @@ const main = async () => {
 
   // RESOLVER 가져와서 스키마에 등록
   const schema = await buildSchema({
-    resolvers: [
-      MeResolver,
-      RegisterResolver,
-      LoginResolver,
-      ConfirmUserResolver
-    ],
+    resolvers: [__dirname + '/modules/**/*.ts'],
     authChecker: ({ context: { req } }) => {
       return !!req.session.userId;
     }
