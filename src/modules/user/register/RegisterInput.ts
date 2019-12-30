@@ -1,9 +1,10 @@
-import { Length, IsEmail, IsNotEmpty } from 'class-validator';
+import { Length, IsEmail } from 'class-validator';
 import { Field, InputType } from 'type-graphql';
 import { isEmailAlreadyExist } from './isEmailAlreadyExist';
+import { PasswordInput } from '../../shared/PasswordInput';
 
 @InputType()
-export class RegisterInput {
+export class RegisterInput extends PasswordInput {
   @Field()
   @Length(1, 255)
   firstName: string;
@@ -20,8 +21,4 @@ export class RegisterInput {
   //   message: '이미 존재하는 이메일입니다.'
   // })
   email: string;
-
-  @Field()
-  @IsNotEmpty({ message: '암호를 입력해주세요.' })
-  password: string;
 }
