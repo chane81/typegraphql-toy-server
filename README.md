@@ -343,7 +343,7 @@
       );
 
       // EXPRESS 를 미들웨어로 등록
-      apolloServer.applyMiddleware({ app });
+      apolloServer.applyMiddleware({ app, cors: false });
       ```
 
     - 2번째 방법은 cors 모듈을 설치하지 않고 사용하는 방법. 아래 코드 참고
@@ -376,7 +376,7 @@
         const httpLink = createHttpLink({
           uri: 'http://localhost:4000/graphql'
           // 종류: omit(생략), include(다른 도메인일 경우), same-origin(같은 도메인일 경우)
-          credentials: 'same-origin'
+          credentials: 'include'
         });
         ```
 
@@ -479,3 +479,43 @@
     - ㄷ. confirmUser 리졸버에서 이메일 내용에 포함된 토큰을 가지고 인증 데이터 update
       - postgres DB 의 User.confirmed 데이터를 true 로 update
       - redis 의 해당 key: 토큰 값을 제거
+
+# 10. 개발이슈
+
+- ## SPA 에서 로그인 뮤테이션 호출후에 qid 쿠키가 생성되지 않는 이슈
+
+  - 아래의 설정을 반드시 해주어야 쿠키가 생성되니 참고
+  - 클라이언트측
+
+    - initApollo 에서 `createHttpLink`쪽 credentials 설정을 반드시 해주어야 한다.
+      ```js
+      const httpLink = createHttpLink({
+        uri: 'http://localhost:4000/graphql',
+        // 종류: omit(생략), include(다른 도메인일 경우), same-origin(같은 도메인일 경우)
+        credentials: 'include'
+      });
+      ```
+
+  - 서버측
+
+    - cors 설정과 apollo 미들웨어의 cors 설정을 꼭 해주어야 한다.
+
+      ```js
+      // cors 설정
+      const whitelist = ['http://localhost:3000'];
+      app.use(
+        cors({
+          credentials: true,
+          origin: (origin, callback) => {
+            if (whitelist.indexOf(origin!) !== -1) {
+              callback(null, true);
+            } else {
+              callback(new Error('Not allowed by CORS'));
+            }
+          }
+        })
+      );
+
+      // EXPRESS 를 미들웨어로 등록 (express-cors 를 쓰고 있으므로 apolloServer 의 cors 설정은 false 로 해줌)
+      apolloServer.applyMiddleware({ app, cors: false });
+      ```
