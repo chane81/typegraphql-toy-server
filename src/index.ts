@@ -42,10 +42,18 @@ const main = async () => {
   const RedisStore = connectRedis(session);
   //const MongoStore = connectMongo(session);
 
+  // cors 설정
+  const whitelist = ['http://localhost:3000'];
   app.use(
     cors({
       credentials: true,
-      origin: 'http://localhost:3000'
+      origin: (origin, callback) => {
+        if (whitelist.indexOf(origin!) !== -1) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      }
     })
   );
 
@@ -72,7 +80,7 @@ const main = async () => {
   );
 
   // EXPRESS 를 미들웨어로 등록
-  apolloServer.applyMiddleware({ app });
+  apolloServer.applyMiddleware({ app, cors: false });
 
   // cors 설정은 아래의 방법으로 해도 됨
   // apolloServer.applyMiddleware({
